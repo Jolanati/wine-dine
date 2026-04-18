@@ -66,7 +66,7 @@ Neither dataset may be a toy dataset or one used in lecture examples.
 ### 4.3 Example Project Ideas
 
 | Domain | CNN Task (Images) | RNN Task (Text) | Business Integration |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **E-commerce** | Product image categorisation or defect detection | Customer review sentiment analysis | Flag products with visual issues AND negative reviews for urgent quality review |
 | **Real estate** | Property photo room-type classification | Listing description quality scoring | Identify listings with poor photos AND weak descriptions for agent follow-up |
 | **Healthcare** | Medical image classification (X-ray, dermoscopy) | Clinical note key-phrase extraction | Prioritise cases where image findings AND note keywords both indicate urgency |
@@ -122,7 +122,7 @@ The test set must remain untouched until final evaluation. Use the validation se
 You must implement and compare at least **two CNN approaches**:
 
 | # | Approach | Details |
-|---|---|---|
+| --- | --- | --- |
 | 1 | **CNN trained from scratch** | Design a custom CNN architecture (at least 3 convolutional blocks with pooling). Report the number of trainable parameters and training curves (loss and accuracy vs. epoch for both training and validation sets). |
 | 2 | **Transfer learning** | Load a pre-trained model (e.g., ResNet-18/50, EfficientNet-B0, VGG-16). Freeze the backbone, replace the classification head, and fine-tune. Optionally unfreeze later layers and compare results. |
 
@@ -199,7 +199,7 @@ Present a comparison showing the performance of: (a) CNN-only, (b) RNN-only, and
 Each team must submit the following via Moodle by the stated deadline:
 
 | # | Deliverable | Details |
-|---|---|---|
+| --- | --- | --- |
 | 1 | **Jupyter Notebook (.ipynb)** | Complete, well-commented notebook with all code, outputs, and markdown explanations. Must run end-to-end without errors (given the dataset). Include the dataset or a download link/script. Trained model weights should be saved and loadable. |
 | 2 | **PDF of the Notebook** | The same Jupyter Notebook exported as PDF. All outputs, plots, and markdown cells must be visible. |
 | 3 | **Presentation (.pptx or .pdf)** | A 15–20 minute presentation summarising your project. The contribution of each team member must be specified. |
