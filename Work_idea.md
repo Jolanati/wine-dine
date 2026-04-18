@@ -1,5 +1,6 @@
 # Qualio — Wine Intelligence
-### Advanced Machine Learning · Final Project
+
+## Advanced Machine Learning · Final Project
 
 ---
 
@@ -20,7 +21,7 @@ The combined output is presented as a structured sourcing brief: country of orig
 ## What it does
 
 | Output | Source |
-|---|---|
+| --- | --- |
 | Wine style (red / white / rosé / sparkling) | CNN — reads the label image |
 | Quality tier (Entry / Premium / Exceptional) | BiLSTM — reads Vivino user reviews |
 | Wine fact card (name, grape, region, price, alcohol, rating) | Retrieved from WineSensed dataset |
@@ -38,13 +39,15 @@ The combined output is presented as a structured sourcing brief: country of orig
 
 ## Models
 
-**CNN — ResNet-18 (transfer learning)**
+### CNN — ResNet-18 (transfer learning)
+
 - Input: wine label image
 - Task: classify wine style (red, white, rosé, sparkling) — 4 classes
 - Also trained from scratch for comparison
 - Explainability: **Grad-CAM** visualisation on misclassified examples (~20 lines, `torchcam`)
 
-**BiLSTM — GloVe-100d embeddings**
+### BiLSTM — GloVe-100d embeddings
+
 - Input: Vivino review text
 - Task: classify quality tier derived from star rating
 - Also trained as unidirectional LSTM for comparison
@@ -62,7 +65,7 @@ Napping Euclidean distances → three wines that real people found most similar 
 As required by the course rubric:
 
 | # | What | Details |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `qualio.ipynb` | Single notebook, all code and outputs, runs end to end |
 | 2 | `qualio.pdf` | Same notebook exported as PDF |
 | 3 | Presentation | 15-20 min slide deck (.pptx or .pdf) |
@@ -70,7 +73,7 @@ As required by the course rubric:
 
 ## File structure
 
-```
+```text
 qualio/
 ├── qualio.ipynb          ← the submission — fully self-contained
 ├── README.md             ← this file
@@ -98,6 +101,7 @@ Copy `qualio.ipynb` to Colab. Switch to the full dataset, set image size to 224x
 
 **Phase 3 — VS Code (local)**
 Continue with saved weights. All lightweight, runs on CPU. This phase covers:
+
 - Grad-CAM visualisation (CNN explainability)
 - Attention weight visualisation (BiLSTM explainability)
 - Business integration logic and 20-example comparison table
@@ -108,4 +112,4 @@ Continue with saved weights. All lightweight, runs on CPU. This phase covers:
 
 ---
 
-*Dataset: CC BY-NC-ND 4.0 · WineSensed, Bender et al., NeurIPS 2023*
+Dataset: CC BY-NC-ND 4.0 · WineSensed, Bender et al., NeurIPS 2023

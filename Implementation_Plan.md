@@ -1,5 +1,6 @@
 # Qualio — Implementation Plan
-### Step-by-step reference for beginners
+
+## Step-by-step reference for beginners
 
 ---
 
@@ -10,7 +11,8 @@
 3. Create the folder structure from `Work_idea.md`
 4. Create `qualio.ipynb` inside the `qualio/` folder
 5. Install packages in Cell 1 of the notebook:
-   ```
+
+   ```bash
    pip install torch torchvision datasets transformers
    pip install pandas numpy matplotlib seaborn scikit-learn
    pip install torchcam streamlit
@@ -19,6 +21,7 @@
 ---
 
 ## PHASE 1 — Local skeleton (VS Code, CPU, small data)
+
 > Goal: every cell runs without errors. Accuracy does not matter yet.
 
 ---
@@ -136,6 +139,7 @@
 ---
 
 ## PHASE 2 — Real training (Google Colab, GPU)
+
 > Goal: get good weights. This is the only phase that needs a GPU.
 
 ---
@@ -172,6 +176,7 @@
 ### STEP 13 — Download artefacts back to local
 
 Download from Colab/Drive to your `qualio/` folder:
+
 - `weights/cnn_resnet18.pt`
 - `weights/bilstm.pt`
 - `data/enriched_dataset.csv`
@@ -179,6 +184,7 @@ Download from Colab/Drive to your `qualio/` folder:
 ---
 
 ## PHASE 3 — Analysis, explainability, deployment (VS Code, CPU)
+
 > Goal: everything required by the rubric that doesn't need a GPU.
 
 ---
@@ -267,4 +273,4 @@ Deploy: push to GitHub → connect repo to Streamlit Cloud → share the link.
 
 ---
 
-*Total steps: 20 | Phases: 3 | GPU required: Phase 2 only (Google Colab, free tier is enough)*
+Total steps: 20 | Phases: 3 | GPU required: Phase 2 only (Google Colab, free tier is enough)
