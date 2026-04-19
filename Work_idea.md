@@ -16,12 +16,12 @@ The interaction takes under 10 seconds: photograph your food, get back three rec
 
 Three layers in sequence — each independent, each testable on its own:
 
-```
+```text
 PHOTO  →  CNN  →  food label  →  lookup table  →  beer styles  →  BiLSTM  →  flavor language
 ```
 
 | Layer | What it does | ML involved |
-|---|---|---|
+| --- | --- | --- |
 | CNN | Classifies the food photo into one of 101 categories | Yes — image classification |
 | Lookup table | Maps the food category to 2-3 compatible beer macro-styles | No — curated CSV |
 | BiLSTM | Retrieves and ranks flavor language per style from BeerAdvocate | Yes — text classification |
@@ -33,7 +33,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 ## Example output
 
 | | |
-|---|---|
+| --- | --- |
 | **Input** | Photo of pizza margherita |
 | **CNN output** | Pizza (94% confidence) |
 | **Paired styles** | IPA · APA · Lager |
@@ -46,7 +46,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 ## Outputs
 
 | Output | How it is produced |
-|---|---|
+| --- | --- |
 | **Food category** | CNN classifies the photo (101 Food-101 classes) |
 | **Beer style recommendations** (2-3) | Lookup table: `food_beer_pairing.csv` |
 | **Flavor language per style** | BiLSTM-ranked BeerAdvocate reviews for that style |
@@ -57,6 +57,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 ## Datasets
 
 ### Image dataset — Food-101
+
 `load_dataset("ethz/food101")`
 
 - **101,000 images** across 101 food categories (750 train + 250 test per class)
@@ -65,6 +66,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 - **CNN task:** 101-class food classification
 
 ### Text dataset — BeerAdvocate Reviews
+
 `kaggle datasets download rdoume/beerreviews`
 
 - **1.5 million reviews** from the BeerAdvocate community
@@ -73,6 +75,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 - License: Publicly available via Kaggle
 
 ### Pairing table — `food_beer_pairing.csv`
+
 - 101-row CSV: `food, beer_style_1, beer_style_2, beer_style_3`
 - Generated via LLM + Brewers Association pairing guidelines
 - Embedded directly in the notebook (self-sufficient, no file dependency)
@@ -84,7 +87,7 @@ The lookup table is the bridge. It is a simple CSV with 101 rows, generated from
 BeerAdvocate has 100+ styles. Grouped into 8 classes for BiLSTM training:
 
 | Macro-style | Includes |
-|---|---|
+| --- | --- |
 | Lager | American Lager, Pilsner, Helles, Munich Lager |
 | IPA | American IPA, Double IPA, Session IPA, Imperial IPA |
 | Stout/Porter | Dry Stout, Imperial Stout, Porter, Milk Stout |
@@ -142,7 +145,7 @@ The recommendation card returned to the user:
 ## Submission deliverables
 
 | # | What | Details |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `beer_peer.ipynb` | Single notebook, all code and outputs, runs end to end |
 | 2 | `beer_peer.pdf` | Same notebook exported as PDF |
 | 3 | Presentation | 15–20 min slide deck (.pptx or .pdf) |
@@ -172,7 +175,7 @@ beer-peer/
 ## Notebook structure
 
 | Section | Content |
-|---|---|
+| --- | --- |
 | 1 | Environment setup — dependencies and imports |
 | 2 | Data loading — Food-101 + BeerAdvocate + pairing table |
 | 3 | EDA — image dataset (class distribution, sample grid) |
@@ -211,7 +214,3 @@ Load saved weights. Grad-CAM, attention, recommendation card, Streamlit app, PDF
 ---
 
 Dataset licenses: Food-101 (ETH Zurich, research use) · BeerAdvocate (Kaggle, public)
-
-
-
-

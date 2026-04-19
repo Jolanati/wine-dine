@@ -1,4 +1,4 @@
-# Beer Peer — Implementation Plan
+# Beer Peer ï¿½ Implementation Plan
 
 ## Step-by-step reference
 
@@ -8,33 +8,33 @@
 
 ## Product recap
 
-A user photographs their food. Beer Peer returns three beer style recommendations, each with flavor language written by real beer drinkers. Three independent components: a CNN that sees the food, a BiLSTM that reads beer reviews, and a lookup table that connects them. The joint model (+10 pts) learns to generalize that connection — scoring food-beer pairs the lookup table never explicitly covered.
+A user photographs their food. Beer Peer returns three beer style recommendations, each with flavor language written by real beer drinkers. Three independent components: a CNN that sees the food, a BiLSTM that reads beer reviews, and a lookup table that connects them. The joint model (+10 pts) learns to generalize that connection ï¿½ scoring food-beer pairs the lookup table never explicitly covered.
 
 ---
 
 ## Datasets
 
 | Dataset | How to load | Content | Used for |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Food-101 | `load_dataset("ethz/food101")` | 101,000 images, 101 food classes | CNN training |
 | BeerAdvocate | `kaggle datasets download rdoume/beerreviews` | 1.5M reviews, `beer_style`, `review_text`, `review_overall` | BiLSTM training |
-| Pairing table | Embedded CSV string in notebook | 101 foods × 3 beer styles | Lookup + joint model labels |
+| Pairing table | Embedded CSV string in notebook | 101 foods ï¿½ 3 beer styles | Lookup + joint model labels |
 
-**BiLSTM labels:** 8 macro-style classes (Lager / IPA / Stout-Porter / Wheat / Sour-Farmhouse / Amber-Brown / Pale Ale / Specialty) — group the 100+ raw `beer_style` values before training.
+**BiLSTM labels:** 8 macro-style classes (Lager / IPA / Stout-Porter / Wheat / Sour-Farmhouse / Amber-Brown / Pale Ale / Specialty) ï¿½ group the 100+ raw `beer_style` values before training.
 
 ---
 
 ## Development phases
 
 | Phase | Environment | Sections | What happens |
-|---|---|---|---|
-| **Phase 1** | VS Code (CPU) | 1–4, 6, 10–12 | Data loading. EDA. Text preprocessing. LSTM + BiLSTM training. |
-| **Phase 2** | Google Colab (GPU) | 5, 7–9, 13 | Image data loaders. CNN training (scratch + ResNet-50). Grad-CAM. Joint model training. |
-| **Phase 3** | VS Code (CPU) | 9, 12, 14–15, deployment | Explainability. Recommendation card. Streamlit app. PDF export. |
+| --- | --- | --- | --- |
+| **Phase 1** | VS Code (CPU) | 1ï¿½4, 6, 10ï¿½12 | Data loading. EDA. Text preprocessing. LSTM + BiLSTM training. |
+| **Phase 2** | Google Colab (GPU) | 5, 7ï¿½9, 13 | Image data loaders. CNN training (scratch + ResNet-50). Grad-CAM. Joint model training. |
+| **Phase 3** | VS Code (CPU) | 9, 12, 14ï¿½15, deployment | Explainability. Recommendation card. Streamlit app. PDF export. |
 
 ---
 
-## Before you start — one-time setup
+## Before you start ï¿½ one-time setup
 
 1. Folders `weights/`, `figures/`, `deployment/` are created automatically by the notebook.
 2. Open `beer-peer/beer_peer.ipynb`.
@@ -43,13 +43,13 @@ A user photographs their food. Beer Peer returns three beer style recommendation
 
 ---
 
-## PHASE 1 — Local skeleton (VS Code, CPU)
+## PHASE 1 ï¿½ Local skeleton (VS Code, CPU)
 
 > Goal: every cell runs without errors. Accuracy does not matter yet.
 
 ---
 
-### STEP 1 — Load the datasets
+### STEP 1 ï¿½ Load the datasets
 
 **Section 2 of the notebook.**
 
@@ -69,19 +69,19 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 2 — EDA: image dataset
+### STEP 2 ï¿½ EDA: image dataset
 
 **Section 3 of the notebook.**
 
-- 3×6 sample image grid (2 images per food class, randomly sampled from 18 classes).
-- Class distribution bar chart (101 bars — confirm ~750 train / ~250 test per class).
+- 3ï¿½6 sample image grid (2 images per food class, randomly sampled from 18 classes).
+- Class distribution bar chart (101 bars ï¿½ confirm ~750 train / ~250 test per class).
 - Image dimension histogram (confirm variable resolution ? need resize in preprocessing).
 
 **Done when:** sample grid and distribution chart visible.
 
 ---
 
-### STEP 3 — EDA: text dataset
+### STEP 3 ï¿½ EDA: text dataset
 
 **Section 4 of the notebook.**
 
@@ -94,7 +94,7 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 4 — Text preprocessing and data loaders
+### STEP 4 ï¿½ Text preprocessing and data loaders
 
 **Section 6 of the notebook.**
 
@@ -108,11 +108,11 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 5 — CNN skeleton (architecture only)
+### STEP 5 ï¿½ CNN skeleton (architecture only)
 
 **Section 7 of the notebook.**
 
-- Define 3-block custom CNN: `Conv2d ? BatchNorm ? ReLU ? MaxPool2d` × 3 ? `Flatten ? FC(512) ? FC(101)`.
+- Define 3-block custom CNN: `Conv2d ? BatchNorm ? ReLU ? MaxPool2d` ï¿½ 3 ? `Flatten ? FC(512) ? FC(101)`.
 - `model(torch.randn(2, 3, 224, 224))` returns `[2, 101]`.
 - Full training in Phase 2 only.
 
@@ -120,7 +120,7 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 6 — ResNet-50 skeleton
+### STEP 6 ï¿½ ResNet-50 skeleton
 
 **Section 8 of the notebook.**
 
@@ -131,7 +131,7 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 7 — LSTM baseline (full training on CPU)
+### STEP 7 ï¿½ LSTM baseline (full training on CPU)
 
 **Section 10 of the notebook.**
 
@@ -143,12 +143,12 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 8 — BiLSTM with attention (full training on CPU)
+### STEP 8 ï¿½ BiLSTM with attention (full training on CPU)
 
 **Section 11 of the notebook.**
 
 - `bidirectional=True`, hidden 128 (output 256).
-- Attention: `score = softmax(W · h_t)` ? weighted sum ? classification head.
+- Attention: `score = softmax(W ï¿½ h_t)` ? weighted sum ? classification head.
 - Train 3 epochs; compare val accuracy vs. LSTM baseline.
 - Save `weights/bilstm.pt`.
 
@@ -156,7 +156,7 @@ df_beer = pd.read_csv("beerreviews.csv") # after kaggle download
 
 ---
 
-### STEP 9 — Joint model skeleton
+### STEP 9 ï¿½ Joint model skeleton
 
 **Section 13 of the notebook.**
 
@@ -189,7 +189,7 @@ def build_pairs(df_food, df_beer, pairing_df, n_negatives_per_positive=3):
     return pairs
 ```
 
-Architecture (skeleton — forward pass on dummy tensors only):
+Architecture (skeleton ï¿½ forward pass on dummy tensors only):
 
 ```python
 class CompatibilityModel(nn.Module):
@@ -219,25 +219,25 @@ class CompatibilityModel(nn.Module):
 
 ---
 
-## PHASE 2 — Real training (Google Colab, GPU)
+## PHASE 2 ï¿½ Real training (Google Colab, GPU)
 
 > Goal: get good weights. Only this phase requires GPU.
 
 ---
 
-### STEP 10 — Move to Colab
+### STEP 10 ï¿½ Move to Colab
 
 - Upload `beer_peer.ipynb` to Colab; mount Drive; set weight output paths to Drive.
 - Run **Section 5**: build image `DataLoader` from Food-101.
   - Transforms: `Resize(256) ? CenterCrop(224) ? RandomHorizontalFlip ? ColorJitter ? ToTensor ? Normalize(ImageNet stats)`.
-  - Train / val / test split stratified by class (750/250 already done by Food-101 — use official split).
+  - Train / val / test split stratified by class (750/250 already done by Food-101 ï¿½ use official split).
   - Confirm one batch: `torch.Size([B, 3, 224, 224])`.
 
 ---
 
-### STEP 11 — Train CNN scratch (full)
+### STEP 11 ï¿½ Train CNN scratch (full)
 
-**Section 7 — full training.**
+**Section 7 ï¿½ full training.**
 
 - 20 epochs, early stopping on val loss (patience 3).
 - Optimizer: Adam lr 1e-3; scheduler: ReduceLROnPlateau.
@@ -246,21 +246,21 @@ class CompatibilityModel(nn.Module):
 
 ---
 
-### STEP 12 — Train ResNet-50 (full)
+### STEP 12 ï¿½ Train ResNet-50 (full)
 
-**Section 8 — full training.**
+**Section 8 ï¿½ full training.**
 
 - Phase A: frozen backbone, train FC head only, 5 epochs, lr 1e-3.
 - Phase B: unfreeze last ResNet block (`layer4`), lr 1e-4, 10 more epochs.
 - Save best to `weights/cnn_resnet50.pt`.
 - Report test: Accuracy, macro F1, Confusion Matrix.
-- Markdown: compare scratch vs. ResNet-50 — accuracy, training time, top-5 failure modes.
+- Markdown: compare scratch vs. ResNet-50 ï¿½ accuracy, training time, top-5 failure modes.
 
 ---
 
-### STEP 13 — Train joint model (full)
+### STEP 13 ï¿½ Train joint model (full)
 
-**Section 13 — full training.**
+**Section 13 ï¿½ full training.**
 
 - Load frozen `cnn_resnet50.pt` encoder (replace FC with identity to get 2048-d embedding).
 - Load frozen `bilstm.pt` encoder (remove classification head to get 256-d embedding).
@@ -268,11 +268,11 @@ class CompatibilityModel(nn.Module):
 - Train only the FC head, 10 epochs, BCELoss, Adam lr 1e-3.
 - Save to `weights/joint_model.pt`.
 - Report: AUC-ROC, precision, recall on test pairs.
-- **The interesting experiment:** run the joint model on food-style pairs NOT in the lookup table. Print the top-5 unexpected high-scoring pairs — these are the "learned extensions" of the hardcoded rules.
+- **The interesting experiment:** run the joint model on food-style pairs NOT in the lookup table. Print the top-5 unexpected high-scoring pairs ï¿½ these are the "learned extensions" of the hardcoded rules.
 
 ---
 
-### STEP 14 — Download artefacts
+### STEP 14 ï¿½ Download artefacts
 
 Download from Colab / Drive to local `weights/`:
 
@@ -283,13 +283,13 @@ Download from Colab / Drive to local `weights/`:
 
 ---
 
-## PHASE 3 — Analysis, explainability, deployment (VS Code, CPU)
+## PHASE 3 ï¿½ Analysis, explainability, deployment (VS Code, CPU)
 
 > Goal: rubric-required analysis and working demo.
 
 ---
 
-### STEP 15 — CNN explainability (Grad-CAM)
+### STEP 15 ï¿½ CNN explainability (Grad-CAM)
 
 **Section 9 of the notebook.**
 
@@ -299,7 +299,7 @@ Download from Colab / Drive to local `weights/`:
 
 ---
 
-### STEP 16 — BiLSTM explainability (attention weights)
+### STEP 16 ï¿½ BiLSTM explainability (attention weights)
 
 **Section 12 of the notebook.**
 
@@ -309,7 +309,7 @@ Download from Colab / Drive to local `weights/`:
 
 ---
 
-### STEP 17 — Recommendation card + 20-example table
+### STEP 17 ï¿½ Recommendation card + 20-example table
 
 **Section 14 of the notebook.**
 
@@ -333,23 +333,23 @@ def recommend(image_path):
 
 - Run on 20 Food-101 test images.
 - Display as table: Food | CNN confidence | Style 1 | Style 2 | Style 3 | Joint scores.
-- Highlight 3 cases where joint model re-ranked the lookup table order — explain why.
+- Highlight 3 cases where joint model re-ranked the lookup table order ï¿½ explain why.
 
 ---
 
-### STEP 18 — Business framing (markdown cells)
+### STEP 18 ï¿½ Business framing (markdown cells)
 
 **Section 15 of the notebook.**
 
 Three markdown cells:
 
-1. **Business framing** — target user (restaurant guests, home cooks, event planners). Decision supported: what beer to order or stock. Cost of a bad recommendation: wasted purchase, disappointed guest. Cost of a missed pairing: guest defaults to habit instead of trying something new.
-2. **Ethics and bias** — BeerAdvocate skews toward craft beer enthusiasts and English-language reviewers. Food-101 skews toward Western dishes. Pairing table is curated by one perspective (Brewers Association). Joint model inherits all three biases. Mitigation ideas.
-3. **Team contribution table** — each member's section ownership.
+1. **Business framing** ï¿½ target user (restaurant guests, home cooks, event planners). Decision supported: what beer to order or stock. Cost of a bad recommendation: wasted purchase, disappointed guest. Cost of a missed pairing: guest defaults to habit instead of trying something new.
+2. **Ethics and bias** ï¿½ BeerAdvocate skews toward craft beer enthusiasts and English-language reviewers. Food-101 skews toward Western dishes. Pairing table is curated by one perspective (Brewers Association). Joint model inherits all three biases. Mitigation ideas.
+3. **Team contribution table** ï¿½ each member's section ownership.
 
 ---
 
-### STEP 19 — Streamlit deployment
+### STEP 19 ï¿½ Streamlit deployment
 
 **`deployment/app.py`**
 
@@ -381,7 +381,7 @@ Deploy: push to GitHub ? connect to Streamlit Cloud ? submit link.
 Total steps: 19 | Phases: 3 | GPU required: Phase 2 only
 
 | Phase | Where | Sections | Needs GPU |
-|---|---|---|---|
-| 1 | VS Code, CPU | 1–4, 6, 10–11, 13 (skeleton) | No |
-| 2 | Google Colab | 5, 7–8, 13 (full) | **Yes** |
-| 3 | VS Code, CPU | 9, 12, 14–15, deployment | No |
+| --- | --- | --- | --- |
+| 1 | VS Code, CPU | 1ï¿½4, 6, 10ï¿½11, 13 (skeleton) | No |
+| 2 | Google Colab | 5, 7ï¿½8, 13 (full) | **Yes** |
+| 3 | VS Code, CPU | 9, 12, 14ï¿½15, deployment | No |
