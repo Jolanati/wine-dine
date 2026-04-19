@@ -1,6 +1,6 @@
 # Beer Peer
 
-**Deep Learning Project - RSU**
+Deep Learning Project - RSU
 
 *Photograph your food. Discover your perfect beer.*
 
@@ -31,7 +31,7 @@ The interaction is designed to take under 10 seconds from input to output:
 ### 2.2 Example Output
 
 | | |
-|---|---|
+| --- | --- |
 | **Input** | Photo of pizza margherita |
 | **CNN Output** | Pizza |
 | **Pairing Logic** | Pizza pairs with: Lager, IPA, Amber Ale |
@@ -45,7 +45,7 @@ The interaction is designed to take under 10 seconds from input to output:
 ### 3.1 Image Dataset - Food-101
 
 | | |
-|---|---|
+| --- | --- |
 | **Name** | Food-101 |
 | **Source** | ETH Zurich / Hugging Face Hub |
 | **Load command** | `load_dataset("ethz/food101")` |
@@ -59,7 +59,7 @@ Food-101 is one of the most widely used food image classification benchmarks in 
 ### 3.2 Text Dataset - BeerAdvocate Reviews
 
 | | |
-|---|---|
+| --- | --- |
 | **Name** | Beer Reviews - BeerAdvocate |
 | **Source** | Kaggle |
 | **Load command** | `kaggle datasets download rdoume/beerreviews` |
@@ -77,7 +77,7 @@ BeerAdvocate is one of the largest community beer review datasets available. Eac
 The project pipeline consists of three sequential layers: a visual classification layer, a business logic layer, and a textual characterization layer. Each layer is independently trained and evaluated before being connected into the full pipeline.
 
 | Step | Component | Function | Dataset |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | CNN - Image Classifier | Takes a food photograph as input. Outputs a food category label from 101 classes. | Food-101 |
 | 2 | Business Logic Layer | Lookup table mapping each food class to 2-3 compatible beer style categories based on flavor pairing principles. | Hardcoded mapping |
 | 3 | LSTM - Text Classifier | Trained on BeerAdvocate reviews to learn style-specific flavor language. Outputs a representative tasting profile per beer style. | BeerAdvocate |
@@ -107,7 +107,7 @@ The LSTM is trained on BeerAdvocate review text to classify text into beer style
 The lookup table is a small, manually curated mapping from Food-101 class names to beer style categories. It is grounded in established craft beer pairing principles from the Brewers Association and industry sources.
 
 | Food | Recommended Beer Styles |
-|---|---|
+| --- | --- |
 | Pizza, burger, fried chicken | Lager, IPA, Amber Ale |
 | Steak, BBQ ribs, grilled meat | Stout, Porter, Brown Ale |
 | Sushi, seafood, oysters | Pilsner, Hefeweizen, Wheat Beer |
@@ -120,7 +120,7 @@ The lookup table is a small, manually curated mapping from Food-101 class names 
 ## 5. Technical Stack
 
 | | |
-|---|---|
+| --- | --- |
 | **Language** | Python 3.10+ |
 | **Deep Learning** | PyTorch or TensorFlow/Keras |
 | **Image Processing** | torchvision, PIL, Albumentations |
@@ -139,4 +139,4 @@ The lookup table is a small, manually curated mapping from Food-101 class names 
 
 ---
 
-*Beer Peer - Project Description v1.0 - RSU Deep Learning Course*
+Beer Peer - Project Description v1.0 - RSU Deep Learning Course
