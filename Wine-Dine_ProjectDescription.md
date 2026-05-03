@@ -8,7 +8,7 @@ Deep Learning Project - RSU
 
 ## 1. Project Idea
 
-Wine Peer is a deep learning application that bridges the gap between what a person is eating and what they should be drinking. The core concept is simple: a user photographs their meal, and the app returns three wine recommendations — one that complements the food's flavor, one that contrasts it, and one that balances it — each with a real tasting note from a Vivino user and an approval percentage.
+Wine Peer is a deep learning application that bridges the gap between what a person is eating and what they should be drinking. The core concept is simple: a user photographs their meal, and the app returns three wine recommendations — one that matches the food’s characteristic flavors, one that goes in the opposite direction to cut through and refresh, and one that offers an unexpected complementary angle — each with a real tasting note from a Vivino user and an approval percentage.
 
 The motivation comes from a genuine everyday moment. You sit down at a restaurant, or you are cooking at home, and you wonder what to drink. Wine pairing guides exist but are rarely accessible at the moment of decision. Wine Peer makes that knowledge available through a single photograph.
 
@@ -25,8 +25,8 @@ The interaction is designed to take under 10 seconds from input to output:
 1. User opens Wine Peer and photographs their meal on a plate or table.
 2. The CNN model identifies the dish from the image.
 3. The food's flavor profile (a set of taste-descriptor keywords in wine vocabulary) is looked up from the food flavor table.
-4. Word2Vec — trained on 824,000 real Vivino reviews — maps those keywords into the same flavor embedding space as grape varieties. Cosine similarity finds the best match for each of three pairing intents: Complement, Contrast, Balance.
-5. The BiLSTM encoder retrieves the single most representative real Vivino review for the matched grape variety.
+4. Word2Vec — trained on 824,000 real Vivino reviews — maps those keywords into the same flavor embedding space as grape varieties. Cosine similarity finds the best match for each of three pairing intents: Characteristic, Opposite, Unexpected.
+5. The BiLSTM encoder scores all reviews for the matched grape class and picks the one with the **highest classification confidence** as the most representative real Vivino tasting note.
 6. The user sees the dish name, three wine recommendations (one per intent) with grape variety, a real wine bottle name, a genuine drinker quote, and a Vivino approval percentage.
 
 ### 2.2 Example Output
@@ -39,9 +39,9 @@ The interaction is designed to take under 10 seconds from input to output:
 
 | Pairing | Grape | Wine | Drinker Quote | Vivino |
 | --- | --- | --- | --- | --- |
-| **Complement** — amplifies the food's flavors | Sangiovese | Chianti Classico Riserva 2019 | *"Deep cherry and dried herbs — wraps around the tomato sauce like it was made for it."* | 92% users |
-| **Contrast** — cuts through and refreshes | Chardonnay | Chablis Premier Cru 2021 | *"Bone-dry mineral acidity cuts straight through the richness. Resets every bite."* | 89% users |
-| **Balance** — neutral crowd pleaser | Pinot Grigio | Santa Margherita Alto Adige 2022 | *"Light, clean and gently fruited. Gets out of the way and lets the pizza do the talking."* | 86% users |
+| **Characteristic** — amplifies the food’s flavors | Sangiovese | Chianti Classico Riserva 2019 | *“Deep cherry and dried herbs — wraps around the tomato sauce like it was made for it.”* | 92% users |
+| **Opposite** — cuts through and refreshes | Chardonnay | Chablis Premier Cru 2021 | *“Bone-dry mineral acidity cuts straight through the richness. Resets every bite.”* | 89% users |
+| **Unexpected** — surprising crowd-pleasing angle | Pinot Grigio | Santa Margherita Alto Adige 2022 | *“Light, clean and gently fruited. Gets out of the way and lets the pizza do the talking.”* | 86% users |
 
 ---
 
@@ -81,16 +81,17 @@ WineSensed is a NeurIPS 2023 multimodal wine dataset built from Vivino data. Eve
 The project pipeline consists of four sequential layers. Each layer is independently trained and evaluated before being connected into the full pipeline.
 
 ```text
-PHOTO → CNN → food label → food flavor profile → Word2Vec similarity → grape variety (Complement / Contrast / Balance) → BiLSTM review retrieval → flavor language + rating %
+PHOTO → CNN → food label → food flavor profile (JSON) → Word2Vec cosine similarity → grape variety (Characteristic / Opposite / Unexpected) → BiLSTM review retrieval (highest confidence) → flavor language + rating %
 ```
 
 | Step | Component | Function | Dataset |
 | --- | --- | --- | --- |
 | 1 | CNN — Image Classifier | Takes a food photograph as input. Outputs a food category label from 101 classes. | Food-101 |
-| 2 | Food Flavor Table | Each of the 101 food classes has three sets of flavor keywords in wine vocabulary: `complement`, `contrast`, `balance`. | Embedded in notebook |
-| 3 | Word2Vec — Flavor Embedding | Trained on WineSensed Vivino review text. Maps food flavor keywords into the same vector space as grape variety review language. Cosine similarity returns the closest grape per pairing intent. | WineSensed |
-| 4 | BiLSTM — Review Retrieval | Trained on WineSensed reviews for 15-class grape classification. At inference, the encoder finds the most representative real Vivino review per recommended grape. The highest-rated wine of that grape is selected. | WineSensed |
-| 5 | Output Layer | Combines CNN label + Word2Vec pairings + BiLSTM-retrieved Vivino quote + wine name + rating percentage into a structured recommendation card. | Combined |
+| 2 | Food Flavor Table | Each of the 101 food classes has three sets of taste-descriptor keywords (plain language, not wine vocabulary): `characteristic`, `opposite`, `unexpected`. Stored in `data/food_flavor_table.json`. | External curated file |
+| 3 | Word2Vec — Flavor Embedding | Pre-trained on Google News (300-d), fine-tuned on WineSensed review text. Maps food flavor keywords and grape variety review language into the same 300-d vector space. Cosine similarity returns the closest grape centroid (15 × 300) per pairing intent. | WineSensed |
+| 4 | BiLSTM — Review Retrieval | Trained on WineSensed reviews for 15-class grape classification. At inference, the encoder scores every review for the recommended grape class; the review with the **highest BiLSTM confidence** is shown as the most representative tasting note. The wine with the highest Vivino rating for that grape is selected from `df_wine`. | WineSensed |
+| 5 | DistilBERT (Bonus) | Fine-tuned `distilbert-base-uncased` on the same 15-class grape classification task. Compared against LSTM and BiLSTM in Section 11.12 as a Transformer-based encoder alternative. | WineSensed |
+| 6 | Output Layer | Combines CNN label + Word2Vec pairings + BiLSTM-retrieved Vivino quote + wine name + rating percentage into a structured recommendation card. | Combined |
 
 ### 4.1 CNN Architecture
 

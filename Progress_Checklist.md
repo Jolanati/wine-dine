@@ -78,17 +78,18 @@
 - [x] Side-by-side comparison table + per-class accuracy bar chart
 
 ### Bonus (+3 pts)
-- [ ] Transformer-based encoder (DistilBERT) comparison *(optional)*
+- [x] Transformer-based encoder (DistilBERT) comparison — Sections 11.10–11.12 ✔
 
 ---
 
 ## 5.6 — Business Integration
 
 - [ ] Define concrete business decision using both model outputs
-- [ ] Implement integration logic (decision rule / scoring function / dashboard)
-- [ ] Table of 10–20 examples: CNN prediction + RNN prediction + combined recommendation side-by-side
-- [ ] Comparison chart: CNN performance vs. RNN performance vs. combined system quality
-- [ ] Evaluate integrated system — show examples where combined output gives better insight than either model alone
+- [ ] Implement Word2Vec cosine similarity pairing (characteristic / opposite / unexpected)
+- [ ] BiLSTM review retrieval — highest-confidence review per grape class
+- [ ] Wine ranking — highest-rated wine per grape from df_wine
+- [ ] Table of 10–20 examples: CNN prediction + grape recommendations (3 types) + tasting note snippet
+- [ ] Comparison chart: CNN accuracy vs BiLSTM accuracy vs pipeline end-to-end
 
 ---
 
@@ -123,7 +124,7 @@
 
 ## 7. Deliverables
 
-- [x] Section 12 — Save ALL results: all 4 model weights + figures synced to Drive
+- [x] Section 12 — Save ALL results: all 5 model weights (CNN scratch, ResNet-50, LSTM, BiLSTM, DistilBERT) + figures synced to Drive
 - [ ] Jupyter Notebook (.ipynb) — runs end-to-end without errors, weights saved & loadable
 - [ ] PDF export of the notebook — all outputs and plots visible
 - [ ] Presentation (.pptx or .pdf) — 15–20 min, all team members' contributions listed

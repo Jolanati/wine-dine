@@ -18,7 +18,7 @@ A user photographs their food. Wine Peer returns three wine recommendations — 
 | --- | --- | --- | --- |
 | Food-101 | `torchvision.datasets.Food101` | 101,000 images, 101 food classes | CNN training |
 | WineSensed | `load_dataset("Dakhoo/L2T-NeurIPS-2023", "vintages", trust_remote_code=True)` | 824k real Vivino reviews, `grape`, `wine`, `year`, `rating`, `review` | BiLSTM training · Word2Vec training · review retrieval |
-| Food flavor table | Embedded Python dict in notebook (Section 2.4) | 101 foods × 3 keyword sets (`complement` / `contrast` / `balance`) | Word2Vec pairing · joint model labels |
+| Food flavor table | JSON file (`data/food_flavor_table.json`) | 101 foods × 3 keyword sets (`characteristic` / `opposite` / `unexpected`) | Word2Vec pairing · joint model labels |
 
 **BiLSTM labels:** top 15 grape varieties by review count (Cabernet Sauvignon / Merlot / Pinot Noir / Syrah / Malbec / Sangiovese / Tempranillo / Grenache / Zinfandel / Chardonnay / Sauvignon Blanc / Riesling / Pinot Grigio / Viognier / Chenin Blanc) — covering ~85% of all reviews.
 
@@ -104,9 +104,9 @@ df_wine = pd.concat([_ds[s].to_pandas() for s in _ds.keys()], ignore_index=True)
 - Load GloVe-100d for BiLSTM; build vocab from training split only (no data leakage).
 - Pad/truncate to 95th-percentile token length; print % truncated.
 - Load pre-trained Google News Word2Vec via gensim (`api.load("word2vec-google-news-300")`); this gives the model general food vocabulary (*tomato*, *fatty*, *smoky*) before any wine-specific training.
-- Fine-tune on all WineSensed review text: `w2v.build_vocab(wine_sentences, update=True)` → `w2v.train(wine_sentences, total_examples=len(wine_sentences), epochs=5)`. This anchors wine-specific words (*Sangiovese*, *cassis*, *tannic*, *terroir*) into the shared space (~10–15 minutes CPU).
+- Fine-tune on all WineSensed review text: `w2v.build_vocab(wine_sentences, update=True)` → `w2v.train(wine_sentences, total_examples=len(wine_sentences), epochs=5)`. This anchors wine-specific words (*Sangiovese*, *cassis*, *tannic*, *terroir*) into the shared space (~10–15 minutes CPU). The fine-tuning is what allows food flavor keywords (*tomato*, *fatty*) and grape variety review language (*Sangiovese*, *cassis*) to be compared directly via cosine similarity — both live in the same 300-d vector space after this step.
 - Save fine-tuned model to `weights/w2v_finetuned.model`.
-- Compute grape embeddings: for each of 15 grape varieties, average all word vectors across reviews for that grape → 15 grape vectors. Save to `weights/grape_embeddings.npy`.
+- Compute grape centroids: for each of the 15 grape classes, average all Word2Vec word vectors across all training reviews for that grape → one 300-d centroid vector per grape. Shape: `(15, 300)`. Save to `weights/grape_embeddings.npy`.
 - **Note:** add `~/gensim-data/` to `.gitignore` — the base Google News model (~1.6 GB) must not be committed.
 - Train / val / test split: 70 / 15 / 15, stratified by `grape_class`, `SEED=42`.
 - Create BiLSTM `DataLoader` (batch size 64).
@@ -329,12 +329,12 @@ def recommend(image_path):
     # 1. CNN → food label (top-3 with confidence)
     food_label, confidence = cnn_predict(image_path)
 
-    # 2. Food flavor table → three keyword sets
-    profiles = food_flavor_table[food_label]  # {complement: [...], contrast: [...], balance: [...]}
+    # 2. Food flavor table → three keyword sets (loaded from data/food_flavor_table.json)
+    profiles = food_flavor_table[food_label]  # {characteristic: [...], opposite: [...], unexpected: [...]}
 
     # 3. Word2Vec → one grape variety per pairing intent
     recommendations = {}
-    for intent in ["complement", "contrast", "balance"]:
+    for intent in ["characteristic", "opposite", "unexpected"]:
         vec = embed_keywords(profiles[intent], w2v_model)
         recommendations[intent] = cosine_top1(vec, grape_embeddings)
 
@@ -364,7 +364,7 @@ def recommend(image_path):
 ```
 
 - Run on 20 Food-101 test images.
-- Display as table: Food | CNN confidence | Grape 1 (Complement) | Grape 2 (Contrast) | Grape 3 (Balance) | Wine names | Rating % | Joint scores.
+- Display as table: Food | CNN confidence | Grape 1 (Characteristic) | Grape 2 (Opposite) | Grape 3 (Unexpected) | Wine names | Rating % | Joint scores.
 - Highlight 3 cases where joint model re-ranked the flavor table order — explain why.
 
 ---

@@ -39,13 +39,13 @@ We used an LLM to generate a **food flavor table** — one entry per Food-101 di
 
 | Key | What it describes |
 | --- | --- |
-| `complement` | Tastes that echo and amplify the dish — e.g. pizza: *tomato, earthy, savory, rich* |
-| `contrast` | Tastes that cut through and refresh — e.g. pizza: *sour, sharp, acidic, bright* |
-| `balance` | Tastes that are crowd-safe and neutral — e.g. pizza: *light, creamy, soft, smooth* |
+| `characteristic` | Tastes that echo and amplify the dish — e.g. pizza: *tomato, earthy, savory, rich* |
+| `opposite` | Tastes that cut through and refresh — e.g. pizza: *sour, sharp, acidic, bright* |
+| `unexpected` | A crowd-safe or surprising complement — e.g. pizza: *light, creamy, soft, honeyed* |
 
 Keywords are written in plain taste and texture language — *tomato*, *smoky*, *creamy*, *sour* — not in wine vocabulary. This is intentional: the Word2Vec model handles the translation (see Step 4).
 
-The flavor table is external curated knowledge. The ML models do not learn it — it is the bridge between what the CNN sees and what Word2Vec searches for.
+The flavor table is external curated knowledge stored in `data/food_flavor_table.json` (101 entries). The ML models do not learn it — it is the bridge between what the CNN sees and what Word2Vec searches for.
 
 ---
 
@@ -53,15 +53,15 @@ The flavor table is external curated knowledge. The ML models do not learn it �
 
 We took a **pre-trained Word2Vec model** (Google News, 300-dimensional) — it already understands everyday food language: *tomato*, *fatty*, *smoky*, *sour*, *creamy* all have well-placed vectors.
 
-We then **fine-tuned it on the 824,000 WineSensed reviews** using gensim — so wine-specific words (*Sangiovese*, *tannic*, *cassis*, *terroir*, *mineral*) were pulled into the same vector space as the food words.
+We then **fine-tune it on the 824,000 WineSensed reviews** using gensim — so wine-specific words (*Sangiovese*, *tannic*, *cassis*, *terroir*, *mineral*) are pulled into the same vector space as the food words. This is the key step that allows a food keyword like *tomato* to be compared directly against a grape variety’s tasting profile.
 
-For each of the 15 grape varieties, we averaged all word vectors from its reviews into a single **grape embedding vector**. The result: 15 points on the same flavor map as the food keywords.
+For each of the 15 grape varieties, we average all word vectors from its reviews into a single **grape centroid vector**. The result: 15 points (shape `15 × 300`) on the same flavor map as the food keywords, saved to `weights/grape_embeddings.npy`.
 
 At inference:
 
-1. The food flavor table gives three keyword lists (complement / contrast / balance)
+1. The food flavor table gives three keyword lists (`characteristic` / `opposite` / `unexpected`)
 2. Each list is embedded by averaging its word vectors
-3. Cosine similarity finds the closest grape embedding to each list
+3. Cosine similarity finds the closest grape centroid to each list
 4. Three grape variety recommendations are returned — one per pairing intent
 
 ---
@@ -70,14 +70,14 @@ At inference:
 
 For each recommended grape:
 
-- The **WineSensed dataset** is filtered to that grape and sorted by rating → the highest-rated real wine bottle + vintage year is selected
-- The **BiLSTM encoder** finds the most representative real Vivino review for that grape
+- The **WineSensed dataset** is filtered to that grape and sorted by Vivino rating → the highest-rated real wine bottle + vintage year is selected
+- The **BiLSTM encoder** scores every review for that grape class; the review with the **highest confidence score** is picked as the most representative tasting note to show the user
 - The rating is converted to a user approval percentage: `rating / 5.0 × 100`
 
 The final output card shows:
 
 - Food label + CNN confidence
-- Three grape recommendations (Complement / Contrast / Balance)
+- Three grape recommendations (Characteristic / Opposite / Unexpected)
 - For each: real wine bottle name, real Vivino tasting note, real Vivino approval %
 
 Nothing is generated — every word in the output comes from a real Vivino user.
@@ -98,13 +98,55 @@ The interesting experiment: run the joint model across all 101 × 15 combination
 
 ---
 
+## Step 7 — DistilBERT bonus encoder (Sections 11.10–11.12)
+
+As a bonus we added a **DistilBERT** text encoder (Sections 11.10–11.12). DistilBERT is a distilled Transformer — 40% smaller and 60% faster than BERT while retaining 97% of its language understanding.
+
+We fine-tuned `distilbert-base-uncased` on the same 15-class grape classification task as the LSTM and BiLSTM. It serves as a comparison baseline to answer: does a pre-trained Transformer encoder outperform our BiLSTM on this wine review task, and by how much?
+
+All three text models (LSTM, BiLSTM, DistilBERT) are compared side by side in Section 11.12. Results and weights are saved in Section 12 alongside the CNN models.
+
+---
+
+## Step 8 — Section 12: saving all results
+
+Section 12 collects results from all 5 trained models and saves them to Google Drive:
+
+- `weights/cnn_scratch.pt` — custom CNN
+- `weights/cnn_resnet50.pt` — ResNet-50 fine-tuned
+- `weights/lstm.pt` — LSTM baseline
+- `weights/bilstm.pt` — BiLSTM with attention
+- `weights/distilbert_best.pt` — DistilBERT fine-tuned
+
+A `_sanitize()` function converts any tensors or numpy arrays in the results dicts to plain Python lists before saving, preventing `pickle.TypeError` on Colab.
+
+A 5-model summary table is printed: model name, val accuracy, test accuracy, parameters.
+
+---
+
+## Engineering notes — Colab environment fixes
+
+**Transformers import stability:** The standard Colab pre-install of `transformers` is pinned to an older version that conflicts with recent `huggingface-hub`. Importing directly causes a kernel crash. We fixed this by:
+
+1. Using a subprocess probe (`subprocess.call([sys.executable, "-c", "from transformers import ..."])`) to detect whether the installed version is usable before attempting an import in the main kernel.
+2. Pinning `transformers>=4.40.0,<5.0 tokenizers>=0.19,<1.0 safetensors>=0.4` and forcing a Colab runtime restart after install.
+3. Removing `huggingface-hub` from the pinned block — pinning it to 0.36.2 was itself causing the crashes.
+
+All pip installs are in Section 1.1; all library imports (including `DistilBertTokenizerFast`, `DistilBertModel`) are in Section 1.2 so the full environment is ready before any model cells run.
+
+---
+
 ## Summary
 
 | What | How |
 | --- | --- |
 | Food recognition | CNN (scratch + ResNet-50) trained on Food-101 |
 | Wine review understanding | BiLSTM trained on 824k real Vivino reviews, 15 grape classes |
-| Flavor bridge | LLM-generated food flavor table — plain taste language |
+| Flavor bridge | LLM-generated food flavor table — plain taste keywords (characteristic / opposite / unexpected) |
 | Grape matching | Word2Vec (Google News pre-trained, fine-tuned on WineSensed) |
+| Grape centroids | 15 vectors (300-d each), one per grape class |
+| Review retrieval | BiLSTM encoder — highest-confidence review per grape = most representative tasting note |
+| Wine ranking | Highest Vivino rating per grape from df_wine |
 | Output | Real wine bottle + real Vivino quote + real approval % |
-| Bonus | Joint model learns food-wine compatibility from (image, review) pairs |
+| Bonus text model | DistilBERT fine-tuned on same 15-class task |
+| Bonus joint model | Learns food-wine compatibility from (image, review) pairs |
