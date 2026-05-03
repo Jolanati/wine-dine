@@ -61,6 +61,7 @@
 
 ### Comparison
 - [x] Grad-CAM explainability visualisations for both models
+- [x] Section 9.3b — restore-from-checkpoint cell (rebuild model + reload weights + restore history after disconnect)
 - [ ] **Written discussion: which model performs better and why** (model capacity, data size, ImageNet domain similarity) — *needs a markdown cell after Section 9.5*
 
 ---
@@ -68,11 +69,13 @@
 ## 5.5 — RNN/LSTM Branch (Text Model)
 
 ### Architecture
-- [ ] Embedding layer (GloVe initialised) + LSTM/BiLSTM layers
-- [ ] Variation 1: Unidirectional LSTM baseline
-- [ ] Variation 2: Bidirectional LSTM with attention
-- [ ] Training/validation loss + accuracy curves for each variation
-- [ ] Final test accuracy + Macro F1 + confusion matrix for both
+- [x] Embedding layer (GloVe 100-d, fine-tuned) + LSTM/BiLSTM layers
+- [x] Variation 1: Unidirectional 2-layer LSTM baseline (`LSTMBaseline`)
+- [x] Variation 2: Bidirectional 2-layer LSTM with Bahdanau attention (`BiLSTMAttention`)
+- [x] Per-epoch Drive checkpoints for both models (resume-safe after disconnect)
+- [x] Training/validation loss + accuracy curves for each variation
+- [x] Final test accuracy + Macro F1 + confusion matrix for both
+- [x] Side-by-side comparison table + per-class accuracy bar chart
 
 ### Bonus (+3 pts)
 - [ ] Transformer-based encoder (DistilBERT) comparison *(optional)*
@@ -120,6 +123,7 @@
 
 ## 7. Deliverables
 
+- [x] Section 12 — Save ALL results: all 4 model weights + figures synced to Drive
 - [ ] Jupyter Notebook (.ipynb) — runs end-to-end without errors, weights saved & loadable
 - [ ] PDF export of the notebook — all outputs and plots visible
 - [ ] Presentation (.pptx or .pdf) — 15–20 min, all team members' contributions listed
@@ -155,10 +159,14 @@
 | CNN from Scratch | ✅ Complete |
 | ResNet-50 Transfer Learning | ✅ Complete |
 | Grad-CAM Explainability | ✅ Complete |
-| CNN vs ResNet written comparison | ⬜ Missing |
-| RNN / BiLSTM Training | ⬜ Not started |
-| Business Integration | ⬜ Not started |
-| Deployment Prototype | ⬜ Not started |
-| Business Framing (ethics, workflow) | ⬜ Not started |
-| Joint Model (bonus +10 pts) | ⬜ Not started |
-| Presentation | ⬜ Not started |
+| CNN vs ResNet written comparison | ⬜ Missing (1 markdown cell needed) |
+| Section 9.3b — Resume from checkpoint | ✅ Complete |
+| LSTM Baseline (11.1–11.5) | ✅ Complete |
+| BiLSTM + Attention (11.6–11.9) | ✅ Complete |
+| Section 12 — Save all weights/figures | ✅ Complete |
+| Business Integration (5.6) | ⬜ Not started |
+| Deployment Prototype (5.7) | ⬜ Not started |
+| Business Framing (5.8) | ⬜ Not started |
+| Bonus Joint Model (+10 pts) | ⬜ Not started |
+| PDF export | ⬜ After all cells run |
+| Presentation slides | ⬜ Not started |
