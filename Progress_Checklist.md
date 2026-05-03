@@ -62,7 +62,7 @@
 ### Comparison
 - [x] Grad-CAM explainability visualisations for both models
 - [x] Section 9.3b — restore-from-checkpoint cell (rebuild model + reload weights + restore history after disconnect)
-- [ ] **Written discussion: which model performs better and why** (model capacity, data size, ImageNet domain similarity) — *needs a markdown cell after Section 9.5*
+- [x] **Written discussion: which model performs better and why** (Section 9.7 — 47.4% scratch vs 78.4% ResNet-50, +31 pp gap explained) ✔
 
 ---
 
@@ -160,7 +160,7 @@
 | CNN from Scratch | ✅ Complete |
 | ResNet-50 Transfer Learning | ✅ Complete |
 | Grad-CAM Explainability | ✅ Complete |
-| CNN vs ResNet written comparison | ⬜ Missing (1 markdown cell needed) |
+| CNN vs ResNet written comparison | ✅ Complete (Section 9.7) |
 | Section 9.3b — Resume from checkpoint | ✅ Complete |
 | LSTM Baseline (11.1–11.5) | ✅ Complete |
 | BiLSTM + Attention (11.6–11.9) | ✅ Complete |
