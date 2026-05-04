@@ -118,6 +118,69 @@ Section 12 collects results from all 5 trained models and saves them to Google D
 - `weights/bilstm.pt` — BiLSTM with attention
 - `weights/distilbert_best.pt` — DistilBERT fine-tuned
 
+---
+
+## Engineering Challenges — Section 13: Recommendation Pipeline
+
+Connecting all trained components into a working `recommend()` pipeline exposed several problems that were not visible during individual model training. Each required diagnosis and a deliberate design decision.
+
+### Challenge 1 — Confidence score always 100%
+
+**Problem:** The recommendation card showed 100% confidence for every grape on every food.
+
+**Why it happened:** We were using `argmax` over a mixed-grape sample of 2,000 reviews. The grape whose reviews dominate the sample wins with near-unanimous softmax votes — winner-takes-all inflation. The score is technically correct but meaningless as a quality signal.
+
+**What we tried:** Switched to the **median** confidence score (50th percentile of the sample). This produced low but honest values — around 0.7% for some grapes — because the target grape is a minority in the mixed sample and its reviews are drowned out.
+
+**How we fixed it:** Abandoned BiLSTM softmax scores entirely for the recommendation card. Instead we use the **BiLSTM hidden-state centroid** approach: run the BiLSTM on target-grape-only test reviews, compute the mean hidden state, and return the review closest to that centroid. The score shown on the card is now the Word2Vec flavor match % — a separate, honest signal.
+
+---
+
+### Challenge 2 — All three pairings returning the same grape
+
+**Problem:** Safe Bet, Bold Move, and Hidden Gem all recommended the same grape variety regardless of the food. The table of 20 foods had almost no variation.
+
+**Why it happened:** Two compounding root causes:
+
+1. **Food vocabulary is not wine vocabulary.** The food flavor table contains words like `cheesy`, `baked`, `greasy`, `starchy`. These words exist in the Google News base Word2Vec model but drift to meaningless regions after fine-tuning on wine review text. The `_WINE_VOCAB` filter (words that appear in both the W2V model and the training corpus) was silently dropping most of the food keywords, leaving only 1–2 words to represent each food.
+
+2. **Grape centroids are too clustered.** Each grape centroid is the average of thousands of review word vectors. Averaging collapses the 15 centroids toward the same "generic wine language" region. When any food keyword vector lands in that region, it finds the same nearest neighbour regardless of the food.
+
+**What we tried first:** A keyword exclusion workaround — after finding the first grape, exclude it and search again. This masked the symptom (three distinct grapes returned) but did not fix the root cause: the three grapes were still all clustering around the same semantic region, just forced to be different labels.
+
+**Attempts at fixing the grape side:**
+- Mean-centering the grape centroids (subtracting the global mean) was considered. This spreads the centroids radially and makes angular distances more discriminating. It is a valid fix but does not address why the food keywords are so thin.
+- Discriminative vocabulary per grape (TF-IDF class weighting) was designed: weight each word by how unique it is to one grape vs. all others, so centroids reflect distinctiveness not frequency. More principled but requires rebuilding all 15 centroids from training reviews.
+
+**Current approach — Query Expansion (the bridge):**
+
+Rather than patching the grape side first, we tackle the food side directly. The key insight is:
+
+> The food flavor table is correctly written in food language. That is intentional and should stay. The system's job is to translate food language into wine language automatically — not require the JSON to speak in wine vocabulary.
+
+We implement a **query expansion layer** inside `embed_keywords()`:
+
+1. Take each food keyword (e.g., `cheesy`, `baked`, `tomato`)
+2. Find its top-N nearest Word2Vec neighbours **within the wine vocabulary** (words that genuinely appear in wine reviews)
+3. This translates food-world words into wine-world equivalents automatically: `cheesy` → `buttery`, `creamy`, `rich`, `lactic`; `baked` → `toasty`, `roasted`, `warm`; `tomato` → `cherry`, `raspberry`, `redcurrant`
+4. The expanded set of 20–30 wine-world terms is IDF-weighted and embedded
+5. The resulting query vector is much richer and more discriminating
+
+This also serves as a **diagnostic**: if query expansion fixes the same-grape problem, the root cause was on the food side. If results still cluster, the grape centroids themselves need fixing (A or B above).
+
+---
+
+### Design principle established
+
+Through this process we established a clear separation of concerns in the pipeline:
+
+| Layer | Language | Responsibility |
+|---|---|---|
+| Food flavor JSON | Food language (`cheesy`, `baked`, `fatty`) | Describe the dish honestly — maintained by curators |
+| Query expansion | Bridge layer | Translate food words to wine-world neighbours automatically |
+| W2V grape centroids | Wine language (`cassis`, `tannic`, `mineral`) | Represent grape tasting profiles |
+| BiLSTM | Wine language | Retrieve the most representative real review per grape |
+
 A `_sanitize()` function converts any tensors or numpy arrays in the results dicts to plain Python lists before saving, preventing `pickle.TypeError` on Colab.
 
 A 5-model summary table is printed: model name, val accuracy, test accuracy, parameters.
