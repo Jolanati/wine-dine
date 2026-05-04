@@ -149,6 +149,65 @@ Even with correct variety in recommendations, some grapes are unfamiliar to most
 
 ---
 
+## Challenge 7 — Contrast and Safe Bet keywords pointed at food, not wine
+
+### What we saw
+After fixing the grape side (discriminative centroids, alpha=2.0) and the food side (query expansion, topn=15, max_total=50), we ran a post-fix audit of the keyword statistics:
+
+- `contrast` category: **78/101 foods shared the word `calorie-dense`**
+- `safe_bet` category: **99/101 foods shared the word `easy`**
+
+Numbers that high make the categories useless — every food produces the same contrast and safe_bet query vector, so those two recommendation slots always return the same grape regardless of dish.
+
+### Root cause
+The `contrast` and `safe_bet` keywords were describing **food qualities**, not wine flavors:
+
+| Category | Old keywords (wrong) | What `_WINE_VOCAB` does to them |
+|---|---|---|
+| `contrast` | `calorie-dense`, `oily`, `starchy`, `heavy` | **Filtered out** — wine reviewers don't write these words |
+| `safe_bet` | `easy`, `low-tannin`, `soft`, `crowd-pleasing` | **Filtered out** — not in wine review corpus |
+
+Because `_WINE_VOCAB` silently drops all food-quality words, both queries collapse to near-zero vectors. The food_flavor_table categories were semantically valid as restaurant descriptions but **never reached the embedding layer at all**.
+
+### The deeper design flaw
+We had conflated two different things:
+- **What a food tastes like** (food language — correctly used in `classic`)
+- **What wine to pair with it** (wine language — needed in `contrast` and `safe_bet`)
+
+`classic` keywords work because they go through `expand_keywords()`, which translates food language into wine vocabulary via W2V neighbours. But `contrast` and `safe_bet` are supposed to describe a *wine direction* — not a food — so they must be written directly in wine language.
+
+### Solution: rewrite all 101 foods as wine-flavor descriptors
+
+Established a pairing logic for the two categories:
+
+| Category | Role | Example (churros / sweet-fried) |
+|---|---|---|
+| `classic` | Food's own flavor → mirror wine | `["cinnamon-sugar", "deep-fried", "chocolate-dipping-sauce", ...]` |
+| `contrast` | Opposite flavor pole → cuts through the food | `["austere", "bone-dry", "tart-citrus", "sharp-lemon", "lean-finish"]` |
+| `safe_bet` | Same direction but softer/different tone | `["ripe-peach", "honeyed-apricot", "off-dry-stone-fruit", ...]` |
+
+Flavor-direction mapping used across all 101 foods:
+
+| Food character | `contrast` wine pole | `safe_bet` wine pole |
+|---|---|---|
+| Sweet / sugary | bone-dry, tart, austere, bracing, razor-sharp | honeyed, peachy, off-dry, apricot, nectarine |
+| Fatty / rich | lean, racy, saline, electric, searing-acid | toasty, buttery, nutty, vanilla, warm-spice |
+| Savory / umami | tropical, passionfruit, lychee, vivid-mango | earthy, cedar, tobacco, forest-floor, dried-herb |
+| Seafood / mineral | opulent, plush, ripe-plum, full-bodied, lush-fruit | citrus-zest, grapefruit, lemon-verbena, saline |
+| Spicy / bold | floral-perfume, gossamer, ethereal, featherweight | rose-petal, elderflower, jasmine, orange-blossom |
+
+### Repetitiveness constraint
+After rewriting all 101 foods, we ran a word-frequency audit across both categories and enforced a **maximum of 7 uses per word**. The final state:
+
+| Category | Max word frequency | Words exceeding limit |
+|---|---|---|
+| `contrast` | 7 (`bone-dry`) | 0 |
+| `safe_bet` | 4 (`forest-floor`) | 0 |
+
+This prevents any single descriptor from homogenising the query vectors across many foods.
+
+---
+
 ## Summary of decisions made
 
 | Problem | Symptom | Root cause | Fix applied |
@@ -162,6 +221,7 @@ Even with correct variety in recommendations, some grapes are unfamiliar to most
 | Low contrast % (7–18%) | Bold Move not bold | Same clustering problem | Mean-centering *(in progress)* |
 | Unintuitive scores | 13% looks like failure | Raw cosine sim displayed directly | Score rescaling *(pending)* |
 | Unknown grape names | Not product-ready | Technical variety names | Display synonym mapping *(pending)* |
+| contrast/safe_bet same grape (78–99/101 foods) | No variety in those slots | Keywords described food, not wine; filtered by `_WINE_VOCAB` | Rewrote all 101 foods as wine-flavor descriptors; max 7 uses/word |
 
 ---
 
